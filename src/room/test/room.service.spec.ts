@@ -57,7 +57,7 @@ describe('RoomService', () => {
     const res = await service.getRoomByKey(roomData.roomKey, 'test');
 
     expect(res.video.url).toEqual(videoUrl);
-    expect(res.video.timecode).toEqual("0");
+    expect(res.video.timecode).toEqual('0');
   });
 
   it('should return room if roomkey and password are correct', async () => {
