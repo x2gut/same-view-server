@@ -16,6 +16,7 @@ jobs:
 
         with:
           node-version: 20
+          fetch-depth: 0
 
       - run: npm install
       - run: echo "MONGO_URL=${{ secrets.MONGO_URI_PROD }}" >> $GITHUB_ENV
