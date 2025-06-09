@@ -8,7 +8,10 @@ import { VideoViewerModule } from './video-viewer/video-viewer.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: `.env.${process.env.NODE_ENV} || dev`,
+    }),
     MongooseModule.forRoot(process.env.MONGO_URL || ''),
     RoomModule,
     ChatModule,

@@ -3,11 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Room } from './schemas/create-room.schema';
 import { Model } from 'mongoose';
 import { v4 as uuidV4 } from 'uuid';
-import generateRoomKey from 'src/shared/utils/generateRoomKey';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { RoomDocument } from './document/room.document';
 import { RoomNotFoundException } from './exceptions/roomNotFound.exception';
 import { InvalidRoomPasswordException } from './exceptions/invalidRoomPassword.exception';
+import generateRoomKey from './utils/generateRoomKey';
 
 @Injectable()
 export class RoomService {
@@ -31,7 +31,7 @@ export class RoomService {
 
   async getRoomByKey(key: string, password?: string) {
     const room = await this.roomModel.findOne({ roomKey: key }).lean();
-    
+
     if (!room) {
       throw new RoomNotFoundException();
     }
@@ -60,7 +60,7 @@ export class RoomService {
     await this.roomModel.updateOne(
       { roomId },
       {
-        $set: { 'video.url': videoUrl },
+        $set: { 'video.url': videoUrl, 'video.timecode': 0 },
       },
     );
   }
