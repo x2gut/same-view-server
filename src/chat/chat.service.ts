@@ -33,6 +33,10 @@ export class ChatService {
     }
 
     currentRoom.delete(username);
+
+    if (currentRoom.size === 0) {
+      this.rooms.delete(roomId);
+    }
   }
 
   async getUsers(roomId: string) {
