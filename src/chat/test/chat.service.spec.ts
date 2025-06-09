@@ -6,7 +6,7 @@ dotenv.config({ path: '.env.dev' });
 
 describe('ChatService', () => {
   let chatService: ChatService;
-  let mockData = { username: 'John', roomId: 'testId' };
+  const mockData = { username: 'John', roomId: 'testId' };
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({

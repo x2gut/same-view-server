@@ -1,0 +1,29 @@
+name: Deploy Master
+
+on:
+  pull_request:
+    branches:
+      - master 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    container:
+      image: node:20
+
+    steps:
+      - uses: actions/checkout@v3
+
+        with:
+          node-version: 20
+
+      - run: npm install
+      - run: npm run test
+      - run: npm run build
+
+      - name: Deploy to Heroku
+        uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: same-view-server
+          heroku_email: zorganhux@gmail.com

@@ -4,5 +4,5 @@ export enum VideoViewerEvents {
   ON_USER_JOIN = 'user_join',
   VIDEO_PAUSED = 'video_paused',
   VIDEO_RESUMED = 'video_resumed',
-  VIDEO_SEEKED = "video_seeked"
+  VIDEO_SEEKED = 'video_seeked',
 }
