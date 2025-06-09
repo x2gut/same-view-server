@@ -16,7 +16,7 @@ import {
   VideoSeekedDto,
 } from './dto';
 
-@WebSocketGateway(80, { namespace: '/video' })
+@WebSocketGateway({ namespace: '/video' })
 export class VideoViewerGateway {
   @WebSocketServer() server: Server;
 

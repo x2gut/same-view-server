@@ -13,7 +13,7 @@ import { UserAlreadyConnectedException } from './exceptions/userAlreadyConnected
 import { OnUserJoinDto, SendMessageDto } from './dto';
 import { WsEvents } from './events/ws-messages.events';
 
-@WebSocketGateway(80, {namespace: "/chat"})
+@WebSocketGateway({namespace: "/chat"})
 export class ChatGateway implements OnGatewayDisconnect {
   @WebSocketServer() server: Server;
 
