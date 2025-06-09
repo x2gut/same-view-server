@@ -15,5 +15,5 @@ jobs:
         with:
           node-version: 20
       - run: npm install
-        run: echo "MONGO_URI=${{ secrets.MONGO_URI_DEV }}" >> $GITHUB_ENV
+      - run: echo "MONGO_URI=${{ secrets.MONGO_URI_DEV }}" >> $GITHUB_ENV
       - run: npm run test
