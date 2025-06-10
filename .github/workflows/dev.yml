@@ -6,7 +6,7 @@ on:
       - dev
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     container: 
       image: node:20
