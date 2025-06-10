@@ -3,29 +3,20 @@ name: Deploy Master
 on:
   pull_request:
     branches:
-      - master 
+      - master
+  push:
+    branches:
+      - master
 
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
     container:
       image: node:20
-
     steps:
       - uses: actions/checkout@v3
-
         with:
           node-version: 20
-          fetch-depth: 0
-
       - run: npm install
       - run: echo "MONGO_URL=${{ secrets.MONGO_URI_PROD }}" >> $GITHUB_ENV
       - run: npm run test
-      - run: npm run build
-
-      - name: Deploy to Heroku
-        uses: akhileshns/heroku-deploy@v3.12.12
-        with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: same-view-server
-          heroku_email: zorganhux@gmail.com
