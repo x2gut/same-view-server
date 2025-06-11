@@ -106,7 +106,6 @@ export class VideoViewerGateway {
     await this.videoViewerService.changeRoomVideoTimecode(roomId, seconds);
 
     this.server.to(roomId).emit(VideoViewerEvents.VIDEO_SEEKED, {
-      // 33
       username,
       seconds,
     });

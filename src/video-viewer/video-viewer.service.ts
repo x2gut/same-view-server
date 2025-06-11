@@ -17,8 +17,8 @@ export class VideoViewerService {
     let roomVideo = this.roomVideo.get(roomId);
 
     if (!roomVideo) {
-      roomVideo = { video: { url: 'j', timecode: 0 } };
-      this.roomVideo.set(roomId, { video: { url: 'j', timecode: 0 } });
+      roomVideo = { video: { url: '', timecode: 0 } };
+      this.roomVideo.set(roomId, roomVideo );
     }
 
     return roomVideo;
