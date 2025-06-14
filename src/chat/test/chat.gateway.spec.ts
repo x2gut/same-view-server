@@ -3,6 +3,8 @@ import { Server, Socket } from 'socket.io';
 import { ChatGateway } from '../chat.gateway';
 import { ChatService } from '../chat.service';
 import { ChatEvents } from '../events/chat-events.enum';
+import { UserAlreadyConnectedException } from '../exceptions/userAlreadyConnected';
+import { UsersLimitPerRoomExceeded } from '../exceptions/usersLimitPerRoomExceeded';
 
 dotenv.config({ path: '.env.dev' });
 
@@ -39,13 +41,40 @@ describe('ChatGateway', () => {
     (gateway.server as any) = serverMock as Server;
   });
 
-  describe("OnUserConnect", () => {
+  describe('Test exceptions', () => {
+    it('Test UserAlreadyConnectedException', async () => {
+      const exception = new UserAlreadyConnectedException(
+        'testUser',
+        'testRoom',
+      );
+
+      const response = exception.toErrorResponse();
+
+      expect(response).toEqual({
+        errorType: 'UserAlreadyConnected',
+        message: `User testUser is already connected to the room`,
+      });
+    });
+
+    it('Test UsersLimitPerRoomExceeded', async () => {
+      const exception = new UsersLimitPerRoomExceeded(5);
+
+      const response = exception.toErrorResponse();
+
+      expect(response).toEqual({
+        errorType: 'UsersLimitPerRoomExceeded',
+        message: 'Room already has 5 online members',
+      });
+    });
+  });
+
+  describe('OnUserConnect', () => {
     it('should send message when connected', async () => {
       await gateway.handleJoin(clientMock, {
         username: 'test',
         roomId: 'test',
       });
-  
+
       expect(chatServiceMock.handleUserConnectEvent).toHaveBeenCalled();
       expect(serverMock.to('test').emit).toHaveBeenCalledWith(
         ChatEvents.NEW_MESSAGE,
@@ -58,7 +87,7 @@ describe('ChatGateway', () => {
       );
       expect(clientMock.join).toHaveBeenLastCalledWith('test');
     });
-  })
+  });
 
   it('should send new message to users in the room', async () => {
     await gateway.handleMessage({

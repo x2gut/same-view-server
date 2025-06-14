@@ -11,6 +11,8 @@ import { ChatService } from './chat.service';
 import { ChatEvents } from './events/chat-events.enum';
 import { UserAlreadyConnectedException } from './exceptions/userAlreadyConnected';
 import { OnUserJoinDto, SendMessageDto } from './dto';
+import { UsersLimitPerRoomExceeded } from './exceptions/usersLimitPerRoomExceeded';
+import { BaseException } from './exceptions/baseException';
 
 @WebSocketGateway({ namespace: '/chat' })
 export class ChatGateway implements OnGatewayDisconnect {
@@ -28,15 +30,11 @@ export class ChatGateway implements OnGatewayDisconnect {
     try {
       await this.chatService.handleUserConnectEvent(data);
     } catch (error) {
-      if (error instanceof UserAlreadyConnectedException) {
+      if (error instanceof BaseException) {
         client.emit(ChatEvents.ERROR, {
-          data: {
-            errorType: "UserAlreadyConnected",
-            message: `User ${username} is already connected to the room`,
-          },
+          data: error.toErrorResponse(),
         });
       }
-      return
     }
 
     client.data.username = username;
