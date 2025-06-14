@@ -29,9 +29,14 @@ export class ChatGateway implements OnGatewayDisconnect {
       await this.chatService.handleUserConnectEvent(data);
     } catch (error) {
       if (error instanceof UserAlreadyConnectedException) {
-        throw error;
+        client.emit(ChatEvents.ERROR, {
+          data: {
+            errorType: "UserAlreadyConnected",
+            message: `User ${username} is already connected to the room`,
+          },
+        });
       }
-      throw error;
+      return
     }
 
     client.data.username = username;

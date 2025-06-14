@@ -10,7 +10,7 @@ describe('ChatGateway', () => {
   let gateway: ChatGateway;
   let serverMock: Pick<Server, 'emit' | 'to'>;
   let chatServiceMock: Partial<ChatService>;
-  let clientMock: Partial<Socket>;
+  let clientMock: jest.Mocked<Socket>;
 
   beforeEach(() => {
     serverMock = {
@@ -27,28 +27,38 @@ describe('ChatGateway', () => {
       emit: jest.fn(),
       join: jest.fn(),
       rooms: new Set<string>(),
-    };
+    } as any;
 
     chatServiceMock = {
       handleUserConnectEvent: jest.fn(),
       handleUserDisconnectEvent: jest.fn(),
-      getUsers: jest.fn(),
+      getUsers: jest.fn().mockResolvedValue(['test']),
     };
 
     gateway = new ChatGateway(chatServiceMock as any);
     (gateway.server as any) = serverMock as Server;
   });
 
-  it('should send message when connected', async () => {
-    await gateway.handleJoin(clientMock as any, {
-      username: 'test',
-      roomId: 'test',
+  describe("OnUserConnect", () => {
+    it('should send message when connected', async () => {
+      await gateway.handleJoin(clientMock, {
+        username: 'test',
+        roomId: 'test',
+      });
+  
+      expect(chatServiceMock.handleUserConnectEvent).toHaveBeenCalled();
+      expect(serverMock.to('test').emit).toHaveBeenCalledWith(
+        ChatEvents.NEW_MESSAGE,
+        {
+          message: `test has connected to the room.`,
+          type: 'system',
+          timestamp: expect.any(String),
+          users: ['test'],
+        },
+      );
+      expect(clientMock.join).toHaveBeenLastCalledWith('test');
     });
-
-    expect(chatServiceMock.handleUserConnectEvent).toHaveBeenCalled();
-    expect(serverMock.to('test').emit).toHaveBeenCalled();
-    expect(clientMock.join).toHaveBeenLastCalledWith('test');
-  });
+  })
 
   it('should send new message to users in the room', async () => {
     await gateway.handleMessage({

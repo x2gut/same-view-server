@@ -86,7 +86,7 @@ describe('VideoViewer gateway', () => {
 
   describe('handle video paused and resume events', () => {
     const mockData = { username: 'test', roomId: 'roomId' };
-    const { username, roomId } = mockData;
+    const { roomId } = mockData;
 
     it('should emit pause video message', async () => {
       clientMock.rooms.add(roomId);
