@@ -34,6 +34,7 @@ export class ChatGateway implements OnGatewayDisconnect {
         client.emit(ChatEvents.ERROR, {
           data: error.toErrorResponse(),
         });
+        return;
       }
     }
 
