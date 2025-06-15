@@ -5,16 +5,24 @@ import { ChatService } from '../chat.service';
 import { ChatEvents } from '../events/chat-events.enum';
 import { UserAlreadyConnectedException } from '../exceptions/userAlreadyConnected';
 import { UsersLimitPerRoomExceeded } from '../exceptions/usersLimitPerRoomExceeded';
+import { OnUserJoinDto } from '../dto';
+import { Test, TestingModule } from '@nestjs/testing';
 
 dotenv.config({ path: '.env.dev' });
 
 describe('ChatGateway', () => {
   let gateway: ChatGateway;
   let serverMock: Pick<Server, 'emit' | 'to'>;
-  let chatServiceMock: Partial<ChatService>;
+  let chatService: jest.Mocked<ChatService>;
   let clientMock: jest.Mocked<Socket>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    const chatServiceMock = {
+      handleUserConnectEvent: jest.fn(),
+      handleUserDisconnectEvent: jest.fn(),
+      getUsers: jest.fn().mockResolvedValue(['user1, user2, user3']),
+    };
+
     serverMock = {
       to: jest.fn().mockReturnValue({ emit: jest.fn() }),
       emit: jest.fn(),
@@ -31,43 +39,70 @@ describe('ChatGateway', () => {
       rooms: new Set<string>(),
     } as any;
 
-    chatServiceMock = {
-      handleUserConnectEvent: jest.fn(),
-      handleUserDisconnectEvent: jest.fn(),
-      getUsers: jest.fn().mockResolvedValue(['test']),
-    };
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        ChatGateway,
+        {
+          provide: ChatService,
+          useValue: chatServiceMock,
+        },
+      ],
+    }).compile();
 
-    gateway = new ChatGateway(chatServiceMock as any);
-    (gateway.server as any) = serverMock as Server;
+    gateway = module.get<ChatGateway>(ChatGateway);
+    gateway.server = serverMock as any;
+    chatService = module.get(ChatService);
   });
 
   describe('Test exceptions', () => {
+    const { username, roomId }: OnUserJoinDto = {
+      username: 'TestUser',
+      roomId: 'TestRoomId',
+    };
+
     it('Test UserAlreadyConnectedException', async () => {
-      const exception = new UserAlreadyConnectedException(
-        'testUser',
-        'testRoom',
-      );
 
-      const response = exception.toErrorResponse();
+      const mockError = new UserAlreadyConnectedException(username, roomId);
 
-      expect(response).toEqual({
-        errorType: 'UserAlreadyConnected',
-        message: `User testUser is already connected to the room`,
+      chatService.handleUserConnectEvent.mockRejectedValue(mockError);
+
+      await gateway.handleJoin(clientMock, { username, roomId });
+
+      expect(chatService.handleUserConnectEvent).toHaveBeenCalledWith({
+        username,
+        roomId,
       });
+      expect(
+        clientMock.emit(ChatEvents.ERROR, {
+          data: mockError.toErrorResponse(),
+        }),
+      );
+      expect(clientMock.join).not.toHaveBeenCalled()
+      expect(serverMock.emit).not.toHaveBeenCalled()
     });
 
     it('Test UsersLimitPerRoomExceeded', async () => {
-      const exception = new UsersLimitPerRoomExceeded(5);
+      const mockError = new UsersLimitPerRoomExceeded(5);
 
-      const response = exception.toErrorResponse();
+      chatService.handleUserConnectEvent.mockRejectedValue(mockError);
 
-      expect(response).toEqual({
-        errorType: 'UsersLimitPerRoomExceeded',
-        message: 'Room already has 5 online members',
+      await gateway.handleJoin(clientMock, { username, roomId });
+
+      expect(chatService.handleUserConnectEvent).toHaveBeenCalledWith({
+        username,
+        roomId,
       });
+      expect(
+        clientMock.emit(ChatEvents.ERROR, {
+          data: mockError.toErrorResponse(),
+        }),
+      );
+      expect(clientMock.join).not.toHaveBeenCalled()
+      expect(serverMock.emit).not.toHaveBeenCalled()
     });
   });
 
+  
   describe('OnUserConnect', () => {
     it('should send message when connected', async () => {
       await gateway.handleJoin(clientMock, {
@@ -75,14 +110,16 @@ describe('ChatGateway', () => {
         roomId: 'test',
       });
 
-      expect(chatServiceMock.handleUserConnectEvent).toHaveBeenCalled();
+      const users = await chatService.getUsers('test');
+
+      expect(chatService.handleUserConnectEvent).toHaveBeenCalled();
       expect(serverMock.to('test').emit).toHaveBeenCalledWith(
         ChatEvents.NEW_MESSAGE,
         {
           message: `test has connected to the room.`,
           type: 'system',
           timestamp: expect.any(String),
-          users: ['test'],
+          users: users,
         },
       );
       expect(clientMock.join).toHaveBeenLastCalledWith('test');
@@ -105,7 +142,7 @@ describe('ChatGateway', () => {
   it('should disconnect user and send message', async () => {
     await gateway.handleDisconnect(clientMock);
 
-    expect(chatServiceMock.handleUserDisconnectEvent).toHaveBeenCalled();
+    expect(chatService.handleUserDisconnectEvent).toHaveBeenCalled();
     expect(serverMock.to('test').emit).toHaveBeenCalledWith(
       ChatEvents.NEW_MESSAGE,
       expect.objectContaining({ type: 'system' }),

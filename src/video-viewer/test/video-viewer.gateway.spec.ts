@@ -2,14 +2,21 @@ import { Server, Socket } from 'socket.io';
 import { VideoViewerService } from '../video-viewer.service';
 import { VideoViewerGateway } from '../video-viewer.gateway';
 import { VideoViewerEvents } from '../events/video-viewer.events';
+import { Test, TestingModule } from '@nestjs/testing';
 
 describe('VideoViewer gateway', () => {
   let serverMock: jest.Mocked<Pick<Server, 'emit' | 'to'>>;
   let clientMock: jest.Mocked<Socket>;
-  let serviceMock: Partial<VideoViewerService>;
+  let videoViewerService: jest.Mocked<VideoViewerService>;
   let gateway: VideoViewerGateway;
 
   beforeEach(async () => {
+    const serviceMock = {
+      setVideo: jest.fn(),
+      changeRoomVideoTimecode: jest.fn(),
+      getVideoByRoomId: jest.fn(),
+    };
+
     serverMock = {
       to: jest.fn().mockReturnValue({ emit: jest.fn() }),
       emit: jest.fn(),
@@ -21,14 +28,19 @@ describe('VideoViewer gateway', () => {
       rooms: new Set<string>(),
     } as any;
 
-    serviceMock = {
-      setVideo: jest.fn(),
-      changeRoomVideoTimecode: jest.fn(),
-      getVideoByRoomId: jest.fn(),
-    };
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        VideoViewerGateway,
+        {
+          provide: VideoViewerService,
+          useValue: serviceMock,
+        },
+      ],
+    }).compile();
 
-    gateway = new VideoViewerGateway(serviceMock as VideoViewerService);
+    gateway = module.get<VideoViewerGateway>(VideoViewerGateway);
     gateway.server = serverMock as any;
+    videoViewerService = module.get(VideoViewerService);
   });
 
   afterEach(() => {
@@ -47,13 +59,13 @@ describe('VideoViewer gateway', () => {
 
     it('should join user to the room and emit data', async () => {
       jest
-        .spyOn(serviceMock, 'getVideoByRoomId')
+        .spyOn(videoViewerService, 'getVideoByRoomId')
         .mockResolvedValue(mockVideoData);
 
       await gateway.handleJoin(clientMock, mockData);
 
       expect(clientMock.join).toHaveBeenCalledWith(mockData.roomId);
-      expect(serviceMock.getVideoByRoomId).toHaveBeenCalledWith(
+      expect(videoViewerService.getVideoByRoomId).toHaveBeenCalledWith(
         mockData.roomId,
       );
       expect(serverMock.to(mockData.roomId).emit).toHaveBeenCalledWith(
@@ -73,7 +85,7 @@ describe('VideoViewer gateway', () => {
       await gateway.setVideo(clientMock, mockData);
 
       expect(clientMock.join).toHaveBeenCalledWith(mockData.roomId);
-      expect(serviceMock.setVideo).toHaveBeenCalledWith(
+      expect(videoViewerService.setVideo).toHaveBeenCalledWith(
         mockData.roomId,
         mockData.videoUrl,
       );
@@ -119,7 +131,7 @@ describe('VideoViewer gateway', () => {
 
     await gateway.seekVideo(clientMock, mockData);
 
-    expect(serviceMock.changeRoomVideoTimecode).toHaveBeenCalledWith(
+    expect(videoViewerService.changeRoomVideoTimecode).toHaveBeenCalledWith(
       roomId,
       seconds,
     );

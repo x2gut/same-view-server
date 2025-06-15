@@ -9,9 +9,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { ChatEvents } from './events/chat-events.enum';
-import { UserAlreadyConnectedException } from './exceptions/userAlreadyConnected';
 import { OnUserJoinDto, SendMessageDto } from './dto';
-import { UsersLimitPerRoomExceeded } from './exceptions/usersLimitPerRoomExceeded';
 import { BaseException } from './exceptions/baseException';
 
 @WebSocketGateway({ namespace: '/chat' })
