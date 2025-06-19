@@ -32,6 +32,7 @@ export class RoomController {
         roomName: roomData.roomName,
         roomKey: roomData.roomKey,
         roomId: roomData.roomId,
+        createdAt: roomData.createdAt,
         isPrivate: !!roomData.password,
       },
     };
