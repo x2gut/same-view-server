@@ -27,6 +27,9 @@ export class Room {
     url?: string;
     timecode?: string;
   };
+
+  @Prop()
+  createdAt: Date
 }
 
 export const RoomSchema = SchemaFactory.createForClass(Room);
