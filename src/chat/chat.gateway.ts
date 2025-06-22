@@ -11,6 +11,7 @@ import { ChatService } from './chat.service';
 import { ChatEvents } from './events/chat-events.enum';
 import { OnUserJoinDto, SendMessageDto } from './dto';
 import { BaseException } from './exceptions/baseException';
+import { UserWritingDto } from './dto/user-writing.dto';
 
 @WebSocketGateway({ namespace: '/chat' })
 export class ChatGateway implements OnGatewayDisconnect {
@@ -56,6 +57,17 @@ export class ChatGateway implements OnGatewayDisconnect {
       message: data.message,
       type: 'user',
       timestamp: new Date().toISOString(),
+    });
+  }
+
+  @SubscribeMessage(ChatEvents.USER_IS_TYPING)
+  async handleUserWriting(
+    @ConnectedSocket() client,
+    @MessageBody() data: UserWritingDto,
+  ) {
+    const { username, roomId } = data;
+    client.to(roomId).emit(ChatEvents.USER_IS_TYPING, {
+      username: username,
     });
   }
 
