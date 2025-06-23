@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { AppModule } from './modules/app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
@@ -13,6 +13,11 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       forbidNonWhitelisted: true,
+      transform: true,
+      whitelist: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
   app.enableCors({ origin: '*', credentials: true });

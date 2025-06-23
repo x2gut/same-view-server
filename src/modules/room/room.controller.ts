@@ -16,6 +16,7 @@ import { RoomNotFoundException } from './exceptions/roomNotFound.exception';
 import { InvalidRoomPasswordException } from './exceptions/invalidRoomPassword.exception';
 import { CreateRoomResponse } from './responses/create-room.response';
 import { SetNewVideoUrl } from './dto/set-new-video.dto';
+import { GetRoomDto } from './dto/get-room.dto';
 
 @Controller('room')
 @ApiTags('Room')
@@ -39,10 +40,7 @@ export class RoomController {
   }
 
   @Get('/key/:key')
-  async getRoomByKey(
-    @Param('key') key: string,
-    @Query() data?: { username: string; password: string },
-  ) {
+  async getRoomByKey(@Param('key') key: string, @Query() data: GetRoomDto) {
     try {
       const roomData = await this.roomService.getRoomByKey(key, data?.password);
       return {
