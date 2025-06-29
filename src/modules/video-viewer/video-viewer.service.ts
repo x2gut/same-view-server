@@ -17,7 +17,10 @@ export class VideoViewerService {
     let roomVideo = this.roomVideo.get(roomId);
 
     if (!roomVideo) {
-      roomVideo = { video: { url: '', timecode: 0 } };
+      roomVideo = {
+        video: { url: '', timecode: 0 },
+        permissions: { video: 'host', playback: 'all' },
+      };
       this.roomVideo.set(roomId, roomVideo);
     }
 
