@@ -15,6 +15,7 @@ import {
   VideoResumedDto,
   VideoSeekedDto,
 } from './dto';
+import ChangeRoomPermissionsDto from './dto/change-room-permissions.dto';
 
 @WebSocketGateway({ namespace: '/video' })
 export class VideoViewerGateway {
@@ -108,6 +109,25 @@ export class VideoViewerGateway {
     this.server.to(roomId).emit(VideoViewerEvents.VIDEO_SEEKED, {
       username,
       seconds,
+    });
+  }
+
+  @SubscribeMessage(VideoViewerEvents.CHANGE_ROOM_PERMISSIONS)
+  async changeRoomPermissions(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: ChangeRoomPermissionsDto,
+  ) {
+    const { hostName, roomId, permissions } = data;
+
+    if (!client.rooms.has(roomId)) {
+      return;
+    }
+
+    this.videoViewerService.changeRoomVideoPermissions(roomId, permissions);
+
+    this.server.to(roomId).emit(VideoViewerEvents.CHANGE_ROOM_PERMISSIONS, {
+      hostName,
+      permissions,
     });
   }
 }

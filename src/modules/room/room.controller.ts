@@ -30,6 +30,7 @@ export class RoomController {
     return {
       message: 'Room created succesfully',
       data: {
+        isOwner: roomData.hostName === data.hostName,
         roomName: roomData.roomName,
         roomKey: roomData.roomKey,
         roomId: roomData.roomId,
@@ -43,8 +44,12 @@ export class RoomController {
   async getRoomByKey(@Param('key') key: string, @Query() data: GetRoomDto) {
     try {
       const roomData = await this.roomService.getRoomByKey(key, data?.password);
+      const isOwner = roomData.hostName === data.username;
       return {
-        data: roomData,
+        data: {
+          ...roomData,
+          isOwner,
+        },
       };
     } catch (error) {
       if (error instanceof RoomNotFoundException) {
