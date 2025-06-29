@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Room } from './schemas/create-room.schema';
+import { Room } from './schemas/room.schema';
 import { Model } from 'mongoose';
 import { v4 as uuidV4 } from 'uuid';
 import { CreateRoomDto } from './dto/create-room.dto';

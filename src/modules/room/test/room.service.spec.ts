@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RoomService } from '../room.service';
 import * as dotenv from 'dotenv';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
-import { Room, RoomSchema } from '../schemas/create-room.schema';
+import { Room, RoomSchema } from '../schemas/room.schema';
 import mongoose, { Model } from 'mongoose';
 
 dotenv.config({ path: '.env.dev' });

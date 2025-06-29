@@ -18,7 +18,7 @@ export class VideoViewerService {
 
     if (!roomVideo) {
       roomVideo = { video: { url: '', timecode: 0 } };
-      this.roomVideo.set(roomId, roomVideo );
+      this.roomVideo.set(roomId, roomVideo);
     }
 
     return roomVideo;
@@ -32,5 +32,18 @@ export class VideoViewerService {
     }
 
     roomVideo.video.timecode = seconds;
+  }
+
+  async changeRoomVideoPermissions(
+    roomId,
+    permission: { video: 'all' | 'host'; playback: 'all' | 'host' },
+  ) {
+    const roomVideo = this.roomVideo.get(roomId);
+
+    if (!roomVideo) {
+      throw new Error(`No room found with such id: ${roomId}`);
+    }
+
+    this.roomVideo.set(roomId, { ...roomVideo, permissions: permission });
   }
 }

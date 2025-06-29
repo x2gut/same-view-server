@@ -6,6 +6,7 @@ export interface CreateRoomResponse {
     roomId: string;
     isPrivate: boolean;
     createdAt: Date;
+    isOwner: boolean;
     video?: {
       url: string;
       timecode: string;
