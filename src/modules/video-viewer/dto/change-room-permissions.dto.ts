@@ -4,6 +4,7 @@ class ChangeRoomPermissionsDto {
   permissions: {
     video: 'all' | 'host';
     playback: 'all' | 'host';
+    reactions: 'enabled' | 'disabled';
   };
 }
 
