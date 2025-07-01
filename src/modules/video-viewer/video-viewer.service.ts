@@ -19,7 +19,7 @@ export class VideoViewerService {
     if (!roomVideo) {
       roomVideo = {
         video: { url: '', timecode: 0 },
-        permissions: { video: 'host', playback: 'all' },
+        permissions: { video: 'host', playback: 'all', reactions: 'enabled' },
       };
       this.roomVideo.set(roomId, roomVideo);
     }
@@ -39,7 +39,11 @@ export class VideoViewerService {
 
   async changeRoomVideoPermissions(
     roomId,
-    permission: { video: 'all' | 'host'; playback: 'all' | 'host' },
+    permission: {
+      video: 'all' | 'host';
+      playback: 'all' | 'host';
+      reactions: 'enabled' | 'disabled';
+    },
   ) {
     const roomVideo = this.roomVideo.get(roomId);
 

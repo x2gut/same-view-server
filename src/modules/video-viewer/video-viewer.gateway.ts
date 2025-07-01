@@ -16,6 +16,7 @@ import {
   VideoSeekedDto,
 } from './dto';
 import ChangeRoomPermissionsDto from './dto/change-room-permissions.dto';
+import { SendReactionDto } from './dto/send-reaction.dto';
 
 @WebSocketGateway({ namespace: '/video' })
 export class VideoViewerGateway {
@@ -93,6 +94,7 @@ export class VideoViewerGateway {
     });
   }
 
+  // HANDLE CHANGE VIDEO SEEKED EVENT
   @SubscribeMessage(VideoViewerEvents.VIDEO_SEEKED)
   async seekVideo(
     @ConnectedSocket() client: Socket,
@@ -112,6 +114,7 @@ export class VideoViewerGateway {
     });
   }
 
+  // HANDLE CHANGE VIDEO ROOM PERMISSIONS
   @SubscribeMessage(VideoViewerEvents.CHANGE_ROOM_PERMISSIONS)
   async changeRoomPermissions(
     @ConnectedSocket() client: Socket,
@@ -128,6 +131,23 @@ export class VideoViewerGateway {
     this.server.to(roomId).emit(VideoViewerEvents.CHANGE_ROOM_PERMISSIONS, {
       hostName,
       permissions,
+    });
+  }
+
+  // HANDLE SEND REACTION
+  @SubscribeMessage(VideoViewerEvents.NEW_REACTION)
+  async sendReaction(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: SendReactionDto,
+  ) {
+    const { roomId, emoji } = data;
+
+    if (!client.rooms.has(roomId)) {
+      return;
+    }
+
+    this.server.to(roomId).emit(VideoViewerEvents.NEW_REACTION, {
+      emoji,
     });
   }
 }
