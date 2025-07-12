@@ -9,9 +9,8 @@ import {
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { ChatEvents } from './events/chat-events.enum';
-import { OnUserJoinDto, SendMessageDto } from './dto';
+import { OnUserJoinDto, SendMessageDto, UserWritingDto } from './dto';
 import { BaseException } from './exceptions/baseException';
-import { UserWritingDto } from './dto/user-writing.dto';
 
 @WebSocketGateway({ namespace: '/chat' })
 export class ChatGateway implements OnGatewayDisconnect {
@@ -71,7 +70,7 @@ export class ChatGateway implements OnGatewayDisconnect {
     });
   }
 
-  async handleDisconnect(client: any) {
+  async handleDisconnect(client: Socket) {
     const { roomId, username } = client.data;
 
     if (!roomId || !username) {

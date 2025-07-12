@@ -10,13 +10,13 @@ import { VideoViewerEvents } from './events/video-viewer.events';
 import { Server, Socket } from 'socket.io';
 import {
   OnUserJoinVideoRoomDto,
+  SendReactionDto,
   SetVideoDto,
   VideoPausedDto,
   VideoResumedDto,
   VideoSeekedDto,
 } from './dto';
 import ChangeRoomPermissionsDto from './dto/change-room-permissions.dto';
-import { SendReactionDto } from './dto/send-reaction.dto';
 
 @WebSocketGateway({ namespace: '/video' })
 export class VideoViewerGateway {
