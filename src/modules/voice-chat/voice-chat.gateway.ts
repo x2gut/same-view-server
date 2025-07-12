@@ -89,10 +89,6 @@ export class VoiceChatGateway implements OnGatewayDisconnect {
       return;
     }
 
-    console.log(
-      payload.type
-    )
-
     this.server.to(payload.target).emit(VoiceChatEvents.SIGNAL, {
       from: client.id,
       data: payload.data,
