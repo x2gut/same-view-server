@@ -3,6 +3,7 @@ import { VideoViewerService } from '../video-viewer.service';
 import { VideoViewerGateway } from '../video-viewer.gateway';
 import { VideoViewerEvents } from '../events/video-viewer.events';
 import { Test, TestingModule } from '@nestjs/testing';
+import ChangeRoomPermissionsDto from '../dto/change-room-permissions.dto';
 
 describe('VideoViewer gateway', () => {
   let serverMock: jest.Mocked<Pick<Server, 'emit' | 'to'>>;
@@ -15,6 +16,7 @@ describe('VideoViewer gateway', () => {
       setVideo: jest.fn(),
       changeRoomVideoTimecode: jest.fn(),
       getVideoByRoomId: jest.fn(),
+      changeRoomVideoPermissions: jest.fn(),
     };
 
     serverMock = {
@@ -139,5 +141,30 @@ describe('VideoViewer gateway', () => {
       VideoViewerEvents.VIDEO_SEEKED,
       { username, seconds },
     );
+  });
+
+  describe('room permissions', () => {
+    const mockData = {
+      hostName: 'testHost',
+      roomId: 'testRoom',
+      permissions: { video: 'all', playback: 'all', reactions: 'enabled' },
+    };
+
+    it('should change room permissions', async () => {
+      clientMock.rooms.add(mockData.roomId);
+      await gateway.changeRoomPermissions(
+        clientMock,
+        mockData as ChangeRoomPermissionsDto,
+      );
+
+      expect(
+        videoViewerService.changeRoomVideoPermissions,
+      ).toHaveBeenCalledWith(mockData.roomId, mockData.permissions);
+
+      expect(serverMock.to(mockData.roomId).emit).toHaveBeenCalledWith(
+        VideoViewerEvents.CHANGE_ROOM_PERMISSIONS,
+        { hostName: mockData.hostName, permissions: mockData.permissions },
+      );
+    });
   });
 });
