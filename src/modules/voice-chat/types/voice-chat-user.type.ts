@@ -1,6 +1,10 @@
-export type VoiceChatUser = { 
+export type VoiceChatUser = {
   id: string;
   username: string;
-  isDeaf: boolean;
+  settings: VoiceSettings;
+};
+
+export type VoiceSettings = {
   isMuted: boolean;
+  isDeaf: boolean;
 };
