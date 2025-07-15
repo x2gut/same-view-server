@@ -10,8 +10,11 @@ import { Socket, Server } from 'socket.io';
 import { VoiceChatService } from './voice-chat.service';
 import { SignalPayload } from './types/signal-data.type';
 import { VoiceChatEvents } from './events/voice-chat.events';
-import { VoiceChatJoinDto } from './dto/voice-chat-join.dto';
-import { GetVoiceChatUsers } from './dto/get-voice-chat-users.dto';
+import {
+  ChangeUserStatusDto,
+  GetVoiceChatUsersDto,
+  VoiceChatJoinDto,
+} from './dto';
 
 @WebSocketGateway({ namespace: '/voice' })
 export class VoiceChatGateway implements OnGatewayDisconnect {
@@ -26,7 +29,7 @@ export class VoiceChatGateway implements OnGatewayDisconnect {
       return;
     }
 
-    await this.voiceChatService.onVoiceChatDisconnect(roomId, username);
+    this.voiceChatService.onVoiceChatDisconnect(roomId, username);
 
     this.server.to(roomId).emit(VoiceChatEvents.USER_LEFT, {
       username,
@@ -36,7 +39,7 @@ export class VoiceChatGateway implements OnGatewayDisconnect {
   @SubscribeMessage(VoiceChatEvents.GET_USERS)
   async getVoiceChatUsers(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: GetVoiceChatUsers,
+    @MessageBody() data: GetVoiceChatUsersDto,
   ) {
     if (!client.rooms.has(data.roomId)) {
       client.join(data.roomId);
@@ -93,6 +96,32 @@ export class VoiceChatGateway implements OnGatewayDisconnect {
       from: client.id,
       data: payload.data,
       type: payload.type,
+    });
+  }
+
+  @SubscribeMessage(VoiceChatEvents.CHANGE_USER_STATUS)
+  async handleChangeUserStatus(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: ChangeUserStatusDto,
+  ) {
+    const { roomId, user } = data;
+    const updatedUser = this.voiceChatService.changeUserStatus(
+      roomId,
+      user.username,
+      user.settings.isDeaf,
+      user.settings.isMuted,
+    );
+
+    if (!updatedUser) {
+      this.server.to(roomId).emit(VoiceChatEvents.ERROR, {
+        errorType: 'NotFound',
+        message: 'User not found',
+      });
+      return;
+    }
+
+    this.server.to(roomId).emit(VoiceChatEvents.CHANGE_USER_STATUS, {
+      updatedUser,
     });
   }
 }

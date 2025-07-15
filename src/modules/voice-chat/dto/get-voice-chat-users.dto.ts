@@ -1,3 +1,3 @@
-export class GetVoiceChatUsers {
+export class GetVoiceChatUsersDto {
     roomId: string
 }

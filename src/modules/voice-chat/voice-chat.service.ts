@@ -1,5 +1,5 @@
-import { Injectable } from "@nestjs/common";
-import { VoiceChatUser } from "./types/voice-chat-user.type";
+import { Injectable } from '@nestjs/common';
+import { VoiceChatUser } from './types/voice-chat-user.type';
 
 @Injectable()
 export class VoiceChatService {
@@ -7,6 +7,10 @@ export class VoiceChatService {
 
   constructor() {
     this.voiceRooms = new Map<string, Map<string, VoiceChatUser>>();
+  }
+
+  private getVoiceChatUser(username: string, roomId: string) {
+    return this.voiceRooms.get(roomId)?.get(username);
   }
 
   async onVoiceChatConnected(roomId: string, username: string, userId: string) {
@@ -17,12 +21,18 @@ export class VoiceChatService {
       this.voiceRooms.set(roomId, room);
     }
 
-    room.set(username, { username, isDeaf: false, isMuted: false, id: userId });
+    const user = {
+      username,
+      id: userId,
+      settings: { isMuted: false, isDeaf: false },
+    };
 
-    console.log(this.voiceRooms);
+    room.set(username, user);
+
+    return user;
   }
 
-  async onVoiceChatDisconnect(roomId: string, username: string) {
+  onVoiceChatDisconnect(roomId: string, username: string) {
     const room = this.voiceRooms.get(roomId);
     if (!room) return;
 
@@ -35,5 +45,25 @@ export class VoiceChatService {
 
   getConnectedUsers(roomId: string): VoiceChatUser[] {
     return Array.from(this.voiceRooms.get(roomId)?.values() || []);
+  }
+
+  changeUserStatus(
+    roomId: string,
+    username: string,
+    isDeaf: boolean,
+    isMuted: boolean,
+  ) {
+    const user = this.getVoiceChatUser(username, roomId);
+    const room = this.voiceRooms.get(roomId);
+
+    if (!user || !room) return;
+
+    const updatedUser = {
+      ...user,
+      settings: { isDeaf: isDeaf, isMuted: isMuted },
+    };
+    room.set(username, updatedUser);
+
+    return updatedUser;
   }
 }
